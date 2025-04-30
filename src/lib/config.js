@@ -7,8 +7,8 @@
 
 export const siteTitle = 'CodeLog'
 export const siteDescription = 'This is blog of Dung and HW'
-export const siteURL = 'example.com'
-export const siteLink = 'https://github.com/josh-collinsworth/sveltekit-blog-starter'
+export const siteURL = 'codelog7.netlify.app'
+export const siteLink = 'https://github.com/Catherine1401/blog.git'
 export const siteAuthor = 'CodeLog'
 
 // Controls how many posts are shown per page on the main blog index pages
