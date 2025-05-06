@@ -75,7 +75,7 @@ Tụi mình đã chuẩn bị sẵn cho bạn một hệ thống blog đơn gi�
 
 1. **Clone Repo**: Bạn có thể clone repository này về máy của mình bằng lệnh:
     ```bash
-    npx degit https://github.com/josh-collinsworth/sveltekit-blog-starter my-sveltekit-blog
+    npx degit https://github.com/Catherine1401/blog.git my-sveltekit-blog
     ```
 2. **Cài Đặt Các Gói Phụ Thuộc**:
     ```bash
