@@ -10,7 +10,7 @@ coverHeight: 9
 excerpt: Cơ bản về tiến trình và luồng
 ---
 
-### Hiệu năng máy tính
+### Hiệu năng máy tín
 
 ##### Thông số CPU
 
