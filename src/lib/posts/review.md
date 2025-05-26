@@ -176,23 +176,23 @@ Trong tiếng Anh, hệ phân tán được gọi là distributed system. Đây 
 
 ## Chụp và để lên blog các hình của thuật toán Cristian, Berkeley, RBS, Lamport, Bully, Ring
 ---
-![cristian](/static/images/cristian.png)
+![cristian](/images/cristian.png)
 
 Thuật toán Cristian
 
-![berkeley](/static/images/berkeley.png)
+![berkeley](/images/berkeley.png)
 
 Thuật toán Berkeley
 
-![lamport](/static/images/lamport.png)
+![lamport](/images/lamport.png)
 
 Giải thuật Lamport
 
-![bully](/static/images/bully.png)
+![bully](/images/bully.png)
 
 Giải thuật Bully
 
-![ring](/static/images/ring.png)
+![ring](/images/ring.png)
 
 Giải thuật Ring
 
