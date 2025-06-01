@@ -57,7 +57,7 @@ Gồm các thành phần chính:
 
 ---
 
-## 📁 Cấu trúc Dự án
+## Cấu trúc Dự án
 
 ```bash
 smart_farm/
