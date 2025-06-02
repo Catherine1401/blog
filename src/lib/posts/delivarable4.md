@@ -10,146 +10,398 @@ coverHeight: 9
 excerpt: "Hệ thống giám sát và điều khiển nông trại thông minh sử dụng CnosDB, mô phỏng cảm biến môi trường, xử lý dữ liệu thời gian thực và giao diện trực quan."
 ---
 
-# Hệ Thống Giám Sát & Điều Khiển Nông Trại Thông Minh sử dụng CnosDB
+# LỜI NÓI ĐẦU
 
-### Môn học: Ứng dụng phân tán — Đại học Phenikaa  
-**Giảng viên hướng dẫn:** Phạm Kim Thành  
-**Lớp:** Ứng dụng phân tán*-1-3-24(N05)  
-**Nhóm 07:**  
-- Nguyễn Thị Dung — 22010471  
-- Vũ Viết Huy — 23010699
+Đầu tiên, chúng em xin gửi lời cảm ơn chân thành đến thầy **Phạm Kim Thành**, người dìu dắt chúng em qua học phần *Ứng dụng phân tán*. Thầy đã khai mở tư duy cho chúng em, cho chúng em những góc nhìn mới và chúng em đã học được rất nhiều từ thầy.
 
----
+Đây là **báo cáo bài tập lớn môn Ứng dụng phân tán**. Học phần này yêu cầu sinh viên thiết kế một ứng dụng có các đặc tính phân tán bao gồm:
 
-## Giới thiệu Dự án
+- Tính trong suốt  
+- Tính mở  
+- Tính đồng thời  
+- Tính không đồng bộ  
+- Tính chịu lỗi  
+- Tính mở rộng  
 
-Dự án xây dựng một **hệ thống giám sát và điều khiển nông trại thông minh** sử dụng **CnosDB**, một cơ sở dữ liệu mã nguồn mở tối ưu cho dữ liệu chuỗi thời gian. Hệ thống mô phỏng và theo dõi các thông số môi trường trong thời gian thực với kiến trúc phân tán, hỗ trợ bảng điều khiển trực quan, sinh dữ liệu đa luồng và phản ứng tự động.
+Tài nguyên chúng em được giao là **Cnosdb** (*Cloud native open source database*), yêu cầu là phải dựa vào cơ sở dữ liệu này để xây dựng nên một hệ thống phân tán.
 
----
-
-## Tại sao là Nông trại thông minh?
-
-Nông nghiệp hiện đại ngày càng áp dụng công nghệ như IoT và AI, đòi hỏi hệ thống theo dõi dữ liệu hiệu quả, thời gian thực. Dự án này giải quyết các vấn đề:
-
-- Thiếu giám sát môi trường thời gian thực
-- Hoạt động canh tác thủ công, dễ sai sót
-- Khó lưu trữ và xử lý dữ liệu chuỗi thời gian
-- Hệ thống không mở rộng và khó bảo trì
-
-**Mục tiêu:** Xây dựng một hệ thống giám sát nhẹ, dễ mở rộng, thời gian thực dựa trên công nghệ phân tán hiện đại và cơ sở dữ liệu CnosDB.
+Tuy nhiên, do thời gian cũng như năng lực có hạn nên sản phẩm của chúng em vẫn còn nhiều thiếu sót. Chúng em sẽ bổ sung thêm trong thời gian tới.
 
 ---
 
-## Kiến trúc Hệ thống
+# 1. ĐẶT VẤN ĐỀ
 
-Gồm các thành phần chính:
+## 1.1. Bối cảnh
 
-1. **Sensor Node**: Mô phỏng cảm biến môi trường (nhiệt độ, độ ẩm, ánh sáng…)
-2. **Gateway**: Tổng hợp và gửi dữ liệu đến Load Balancer
-3. **Load Balancer**: Điều phối dữ liệu đến các node CnosDB
-4. **CnosDB Cluster**: Lưu trữ và truy vấn dữ liệu thời gian thực
-5. **Xử lý Đa luồng**:
-    - Ghi dữ liệu
-    - Đọc dữ liệu
-    - Phân tích bất thường
-    - Ra quyết định điều khiển
-6. **Giao diện người dùng**: Dashboard Streamlit trực quan theo thời gian thực
+Trong bối cảnh hiện nay, **nông nghiệp** đang từng bước chuyển mình để thích nghi với các xu hướng công nghệ mới, đặc biệt là mô hình **nông nghiệp thông minh**. Mô hình này hướng đến việc ứng dụng các công nghệ hiện đại như:
+
+- Internet of Things (IoT)  
+- Trí tuệ nhân tạo (AI)  
+- Hệ thống cảm biến  
+- Giải pháp lưu trữ – phân tích dữ liệu  
+ Mục tiêu là nâng cao năng suất, tối ưu hóa nguồn lực và bảo vệ môi trường.
+
+Tuy nhiên, tại nhiều trang trại – đặc biệt ở nông thôn – việc canh tác vẫn còn:
+
+- Mang tính thủ công, rời rạc  
+- Thiếu tính hệ thống  
+- Dữ liệu môi trường (nhiệt độ, độ ẩm đất, ánh sáng,...) không được ghi lại hoặc ghi chép thủ công  
+
+Dẫn đến các hệ quả:
+
+- Không thể giám sát điều kiện môi trường theo thời gian thực  
+- Không thể tự động hóa các hoạt động canh tác  
+- Khó phân tích xu hướng  
+- Không có lịch sử dữ liệu để đánh giá hiệu quả  
+
+Ngoài ra, để triển khai hệ thống giám sát – điều khiển tự động, ta cần một **nền tảng lưu trữ dữ liệu**:
+
+- Nhanh  
+- Ổn định  
+- Mở rộng được  
+- Tối ưu cho dữ liệu thời gian thực  
+ Điều mà các CSDL truyền thống (MySQL, PostgreSQL,...) **không đáp ứng tốt**.
+
+### Bài toán đặt ra:
+
+- Làm sao để thu thập dữ liệu môi trường liên tục và chính xác?
+- Làm sao để lưu trữ và truy xuất dữ liệu hiệu quả theo thời gian?
+- Làm sao để phân tích và tự động ra quyết định (VD: tưới nước khi đất khô)?
+- Làm sao để hệ thống đơn giản, rẻ, dễ dùng với người nông dân?
 
 ---
 
-## Cấu trúc Dự án
+## 1.2. Đề xuất giải pháp
 
-```bash
-smart_farm/
-├── config/                # Cấu hình CnosDB
-├── db/                    # Logic đọc/ghi dữ liệu
-├── sensors/               # Mô phỏng cảm biến
-├── ui/                    # Giao diện dashboard Streamlit
-├── distributed/           # Cluster CnosDB phân tán
-├── images/                # Sơ đồ, ảnh minh họa
-├── main.py                # File chạy chính
-├── requirements.txt       # Thư viện cần thiết
-└── README.md              # File hướng dẫn
+Nhóm đề xuất xây dựng một hệ thống:
+
+- Sử dụng cơ sở dữ liệu hiệu suất cao cho **time series data**
+- Cung cấp **dashboard trực quan** để theo dõi theo thời gian thực
+- Hiển thị cảnh báo khi có bất thường (VD: nhiệt độ cao, độ ẩm thấp)
+- Hỗ trợ người dùng:
+  - Kích hoạt hệ thống tưới tiêu tự động
+  - Gửi thông báo đến người quản lý
+
+---
+
+# 2. THIẾT KẾ HỆ THỐNG
+
+## 2.1. Mô tả hệ thống
+
+Hệ thống xây dựng theo **kiến trúc phân tầng**, gồm các thành phần:
+
+- **Thu thập dữ liệu** từ cảm biến (nhiệt độ, độ ẩm, ánh sáng,...)
+- **Lưu trữ dữ liệu** vào Cnosdb dưới dạng **time series**
+- **Hiển thị và điều khiển** qua giao diện người dùng
+ **Cnosdb** là nền tảng lưu trữ chính nhờ:
+
+- Xử lý hiệu suất cao  
+- Hỗ trợ dữ liệu cảm biến theo thời gian  
+
+Sau khi lưu trữ, dữ liệu sẽ được truy xuất để:
+
+- Hiển thị trên **giao diện trực quan**
+- Tạo **dashboard** theo dõi tình trạng từng khu vực
+- Gửi **cảnh báo sớm**
+- Cho phép người dùng **đưa ra hành động điều khiển**
+
+> Hệ thống hướng tới: **dễ triển khai – dễ mở rộng – phù hợp với nông nghiệp thông minh**
+
+## 2.2. Kiến trúc hệ thống
+
+```st
+               +---------------------------------------------+
+               |               User Interface (UI)           |
+               | (Monitoring, Alerts, Control Actions)       |
+               +----------------------+----------------------+
+                                      |
+                             +--------v--------+
+                             |     API Layer    |
+                             +--------+--------+
+                                      |
+                   +-----------------v-----------------+
+                   |  Multi-threaded Data Handler      |
+                   |  - Write Threads                  |
+                   |  - Read Threads                   |
+                   |  - Alert/Decision Logic           |
+                   +----------------+------------------+
+                                      |
+                         +------------v-------------+
+                         |       CNOSDB Cluster     |
+                         |  (Time-Series Database)  |
+                         +------------+--------------+
+                                      ^
+             +------------------------+------------------------+
+             |                        |                        |
+   +---------v--------+    +---------v--------+     +---------v--------+
+   |    Gateway A     |    |    Gateway B     | ... |    Gateway N     |
+   +---------+--------+    +---------+--------+     +---------+--------+
+             |                       |                         |
+   +---------v-------+       +---------v-------+      +----------v---------+
+   | Sensor A1...An  |       | Sensor B1...Bn  | ...  | Sensor N1...Nn     |
+   +-----------------+       +-----------------+      +--------------------+
+
+                         <== Load Balancer ==>
+                     (Distributes load from all gateways)
+
 ```
-## Công nghệ sử dụng
+
+### 2.2.1. Sensor Nodes
+
+- Thu thập dữ liệu môi trường như: nhiệt độ, độ ẩm, ánh sáng,...
+- Gửi dữ liệu về Gateway gần nhất theo chu kỳ định sẵn.
+
+### 2.2.2. Gateway
+
+- Tập trung dữ liệu từ các cảm biến nội vùng.
+- Gửi dữ liệu theo định dạng chuẩn (JSON, Protocol Buffers,...) thông qua HTTP hoặc MQTT đến Load Balancer.
+
+### 2.2.3. Load Balancer
+
+- Phân phối lưu lượng ghi dữ liệu từ các Gateway đến các node trong cụm CNOSDB.
+- Đảm bảo cân bằng tải giữa các node, tránh tình trạng nghẽn cổ chai.
+
+### 2.2.4. CNOSDB Cluster
+
+- Là cơ sở dữ liệu thời gian thực dùng để lưu trữ dữ liệu cảm biến.
+- Hỗ trợ mở rộng ngang (horizontal scaling) và sharding theo vùng địa lý hoặc loại cảm biến.
+- Tối ưu hóa cho các truy vấn dạng time-series (chuỗi thời gian).
+
+### 2.2.5. Trình xử lý dữ liệu đa luồng (Multi-threaded Data Handler)
+
+- **Luồng ghi (Write Threads):** tiếp nhận dữ liệu từ Load Balancer và ghi xuống CNOSDB.
+- **Luồng đọc (Read Threads):** đọc dữ liệu từ CNOSDB để phục vụ hiển thị dashboard.
+- **Luồng phân tích (Alert Threads):** kiểm tra dữ liệu bất thường như độ ẩm thấp, nhiệt độ cao.
+- **Luồng hành động (Action Threads):** gửi lệnh điều khiển thiết bị nếu có cảnh báo, thông qua Gateway đến các cảm biến.
+
+### 2.2.6. Giao diện người dùng (User Interface - UI)
+
+- Giao diện dashboard hiển thị dữ liệu thời gian thực bằng biểu đồ.
+- Hiển thị cảnh báo trực quan theo màu sắc và mức độ nghiêm trọng.
+- Cung cấp các nút điều khiển như:
+  - Tưới nước thủ công
+  - Điều chỉnh ngưỡng cảnh báo
+  - Bật/tắt hệ thống
+
+## 2.3. Luồng hoạt động
+
+```st
++--------------------------+
+|  Sensor collects data    |
++--------------------------+
+           |
+           v
++--------------------------+
+|  Data sent to Gateway    |
+| (A, B, or C)             |
++--------------------------+
+           |
+           v
++--------------------------+
+|  Gateway forwards data   |
+|  to CNOSDB Cluster       |
++--------------------------+
+           |
+           v
++-------------------------------+
+|  CNOSDB stores time-series    |
+|  data                         |
++-------------------------------+
+           |
+           v
++-------------------------------+
+|  Multi-threaded Data Handler  |
+| - Reads/Writes                |
+| - Alert/Decision Logic        |
++-------------------------------+
+           |
+           v
++-----------------------------+
+|  API Layer prepares results |
++-----------------------------+
+           |
+           v
++-----------------------------+
+|  User Interface (UI)        |
+|  - Monitoring               |
+|  - Alerts                   |
+|  - Control Actions          |
++-----------------------------+
+
+```
+
+# 3. Tài nguyên sử dụng
+
+## 3.1. Ngôn ngữ lập trình chính: Python
+
+Hệ thống được xây dựng chủ yếu bằng ngôn ngữ Python, nhờ vào các ưu điểm sau:
+
+- Dễ học, dễ đọc và bảo trì.
+- Hỗ trợ mạnh mẽ cho xử lý dữ liệu, giao tiếp mạng, và lập trình song song.
+- Có cộng đồng phát triển rộng lớn với hệ sinh thái thư viện đa dạng.
+
+**Thư viện bên ngoài của Python được sử dụng:**
+
+| Thư viện              | Vai trò |
+|------------------------|--------|
+| `streamlit`            | Tạo giao diện người dùng web đơn giản và hiệu quả, dùng để hiển thị dữ liệu cảm biến theo thời gian thực. |
+| `plotly.express`       | Tạo các biểu đồ động, đẹp mắt và tương tác được (ví dụ: biểu đồ nhiệt độ, độ ẩm theo thời gian). |
+| `pandas`               | Xử lý dữ liệu dạng bảng, chuyển đổi dữ liệu từ CNOSDB sang định dạng phân tích được. |
+| `concurrent.futures`   | Tạo các luồng song song để thực hiện đọc và ghi dữ liệu cùng lúc mà không bị nghẽn. |
+| `streamlit_autorefresh`| Làm mới giao diện tự động để đảm bảo người dùng luôn nhìn thấy dữ liệu mới nhất. |
+| `urllib.request`       | Giao tiếp với các API hoặc tải dữ liệu từ xa. |
+| `datetime`             | Gắn dấu thời gian, định dạng thời gian, hỗ trợ truy vấn dữ liệu theo thời gian. |
+| `random`               | Sinh dữ liệu cảm biến ngẫu nhiên trong giai đoạn thử nghiệm. |
+| `sys`, `os`            | Quản lý đường dẫn thư mục, hỗ trợ import mô-đun con trong dự án lớn nhiều tầng thư mục. |
+
+
+
+## 3.2. Cơ sở dữ liệu: CNOSDB
+
+CNOSDB là một hệ quản trị cơ sở dữ liệu mã nguồn mở, chuyên dụng cho dữ liệu chuỗi thời gian. Cơ sở dữ liệu này được thiết kế để phục vụ các ứng dụng đòi hỏi:
+
+- Hiệu suất cao
+- Khả năng nén mạnh
+- Dễ sử dụng
+
+Toàn bộ mã nguồn của CNOSDB đã được công khai trên GitHub, tạo điều kiện thuận lợi cho việc kiểm thử, triển khai và tùy biến theo yêu cầu thực tế.
+
+Với đặc tính hiệu suất cao, khả năng mở rộng linh hoạt, hỗ trợ truy vấn thời gian mạnh mẽ và thiết kế phân tán cloud-native, CNOSDB là một giải pháp rất phù hợp cho các hệ thống cần lưu trữ và phân tích dữ liệu cảm biến thời gian thực ở quy mô lớn.
+
+Đây là một nền tảng dữ liệu lý tưởng cho các ứng dụng IoT như **nông nghiệp thông minh**, giúp tối ưu hóa vận hành, tiết kiệm tài nguyên và tự động hóa quản lý trang trại.
+
+# 4. Xây dựng hệ thống
+
+## Cấu trúc thư mục của dự án:
+
+```st
+
+SMART_FARM/
+├── config/            # Cấu hình hệ thống
+├── db/                # Giao tiếp với CnosDB
+├── distributed/       # Tài liệu triển khai phân tán
+├── images/            # Lưu hình ảnh, biểu đồ
+├── sensors/           # Các lớp cảm biến và mô phỏng
+├── ui/                # Giao diện người dùng
+├── main.py            # Điểm khởi động hệ thống
+├── requirements.txt   # Danh sách thư viện cần thiết
+├── README.md          # Tài liệu giới thiệu hệ thống
+
+```
+
+
+## 4.1. `config/`
+
+Chứa file `cnosdb_config.py` định nghĩa thông tin kết nối đến CnosDB (địa chỉ, cổng, bucket, token,...).  
+Việc tách riêng cấu hình giúp dễ thay đổi mà không ảnh hưởng đến logic hệ thống.
+
+## 4.2. `db/`
+
+Gồm các module xử lý giao tiếp với CnosDB:
+- `writer.py`: Ghi dữ liệu cảm biến vào CnosDB.
+- `query.py`: Truy vấn dữ liệu phục vụ dashboard và cảnh báo.
+
+## 4.3. `sensors/`
+
+Định nghĩa các lớp cảm biến:
+- `base_sensor.py`: Lớp cơ sở (abstract class).
+- `temperature_sensor.py`, `humidity_sensor.py`, `soil_sensor.py`: Các cảm biến cụ thể.
+- `run_fake_sensor.py`: Sinh dữ liệu mô phỏng để test/demo.
+
+## 4.4. `ui/`
+
+Xây dựng giao diện người dùng bằng Streamlit:
+- `dashboard.py`: Hiển thị dữ liệu thời gian thực, biểu đồ, trạng thái cảm biến, và điều khiển từ người dùng.
+
+## 4.5. `distributed/`
+
+Tài liệu `cnosdb_cluster.md` hướng dẫn triển khai cụm CnosDB dạng phân tán trong môi trường thực tế.
+
+## 4.6. `main.py`
+
+Tập tin chính để chạy hệ thống: khởi tạo cảm biến, đa luồng ghi dữ liệu, giao tiếp với CnosDB và hiển thị giao diện người dùng.
+
 ---
-#### Ngôn ngữ
 
-- Python — Cú pháp rõ ràng, dễ viết, thư viện phong phú
+# 5. Sử dụng hệ thống
 
-#### Thư viện chính
+## 5.1. Yêu cầu tối thiểu
 
-| Thư viện                | Mục đích                    |
-| ----------------------- | --------------------------- |
-| `streamlit`             | Giao diện người dùng        |
-| `streamlit_autorefresh` | Tự động làm mới UI          |
-| `plotly.express`        | Vẽ biểu đồ tương tác        |
-| `pandas`                | Phân tích dữ liệu           |
-| `concurrent.futures`    | Xử lý đa luồng              |
-| `urllib.request`        | Kết nối API                 |
-| `datetime`              | Xử lý thời gian             |
-| `random`                | Mô phỏng dữ liệu ngẫu nhiên |
-
-#### Cơ sở dữ liệu
-
-- **CnosDB**: Cơ sở dữ liệu chuỗi thời gian mã nguồn mở, tối ưu cho dữ liệu IoT, hỗ trợ phân tán và truy vấn hiệu quả.
-
-## Bắt đầu
----
-#### Yêu cầu
-
-- Python 3.x
+- Hệ điều hành: Linux (Debian-based).
+- Python 3.0+
 - Docker
 - Git
-- Linux (Debian/Ubuntu được khuyến nghị)
 
-#### Cài đặt
+## 5.2. Các bước cấu hình
+
+**Bước 1: Clone dự án**
+
 ```bash
-# Bước 1: Clone dự án
 git clone https://github.com/Catherine1401/smart_farm.git
 cd smart_farm
+```
 
-# Bước 2: Chạy hệ thống
+Bước 2: Chạy dự án
+
+```bash
 python3 main.py
 ```
-## Quy trình hoạt động
----
-1. Cảm biến tạo dữ liệu liên tục
-2. Gateway gửi dữ liệu đến Load Balancer
-3. Load Balancer điều hướng đến các node CnosDB
-4. CnosDB lưu trữ và phục vụ truy vấn
-5. Dashboard hiển thị dữ liệu trực tiếp
-6. Bộ điều khiển đưa ra cảnh báo/hành động khi phát hiện bất thường
 
-## Tính năng hiện tại
----
-- Dashboard thời gian thực
-- Mô phỏng 1000+ trạm cảm biến
-- Đa luồng xử lý dữ liệu
-- Cảnh báo khi dữ liệu vượt ngưỡng
-- Bảng điều khiển điều khiển tưới tiêu
+Hệ thống sẽ:
 
-## Hướng phát triển
----
-#### Phiên bản cộng đồng (poor version)
+- Tự động tải Docker image của CnosDB.
+- Khởi chạy container.
+- Ghi dữ liệu cảm biến.
+- Mở giao diện dashboard tại localhost:8501.
 
-- Chạy nhiều instance CnosDB thủ công
-- Sử dụng reverse proxy hoặc phân mảnh dữ liệu theo mã hóa
-- hiết lập điều phối đơn giản (stateless routing)
 
-#### Phiên bản doanh nghiệp (rich version)
+# 6. Phương hướng phát triển
 
-- Cluster CnosDB bản enterprise:
-    - Tự động chia nhỏ dữ liệu
-    - Cân bằng tải & sẵn sàng cao
-    - Node riêng cho metadata và storage
+## 6.1. Hiện trạng
 
-## Kết luận
----
-Dự án xây dựng thành công mô hình nguyên mẫu hệ thống giám sát nông trại thông minh sử dụng CnosDB. Hệ thống hoạt động ổn định, có khả năng mở rộng và xử lý dữ liệu thời gian thực hiệu quả. Đây là bước đầu quan trọng trong việc áp dụng công nghệ phân tán vào nông nghiệp thông minh.
+H thống hiện dùng CnosDB Community (single node) để:
+- 
+- Ghi dữ liệu từ 1000 trạm cảm biến mô phỏng (đa luồng).
+- Hiển thị dữ liệu với Streamlit.
+- Phản hồi và cảnh báo thời gian thực.
 
-**Link source code:** [GitHub Repository](https://github.com/Catherine1401/smart_farm.git)
+Hạn chế:
 
-*Hà Nội, tháng 6 năm 2025*
+- Single-point-of-failure (1 node → dễ chết).
+- Không scale-out / replication.
+- Không phân vùng dữ liệu hay quản lý vnodes ở mức cluster.
 
-*Đại học Phenikaa — Nhóm 07*
+## 6.2. Dự định trong tương lai
+
+### 6.2.1. Phương án 1 (phiên bản tiết kiệm)
+
+Dùng nhiều instance CnosDB Community, triển khai qua Docker.
+
+Cân bằng tải bằng Nginx hoặc HAProxy:
+
+- Ghi /write: round-robin.
+- Đọc /query: theo tải hoặc sẵn có.
+- Dùng các câu lệnh MOVE VNODE, COPY VNODE, DROP VNODE (hỗ trợ bản Community).
+
+### 6.2.2. Phương án 2 (phiên bản đầy đủ - Enterprise)
+
+Nâng cấp lên CnosDB Enterprise, hỗ trợ cluster:
+
+- SHOW DATANODES: Theo dõi node.
+- meta_service_addr: Cho các node tham gia 1 cụm.
+- Replication: Tự động sao lưu giữa các node.
+- REMOVENODE, DROP VNODE: Dễ bảo trì node.
+
+Triển khai:
+
+- 1 node Meta (port 8901).
+- 2–3 node làm Storage + Query.
+- Cấu hình meta_service_addr để node tự động tham gia cụm.
+- Ghi/đọc phân phối tự động nhờ cluster controller.
+
+# 7. Kết luận
+
+Hệ thống giám sát và điều khiển nông trại thông minh sử dụng CnosDB đã được xây dựng thành công, đáp ứng các yêu cầu về:
+- Giám sát môi trường theo thời gian thực.
+- Lưu trữ dữ liệu cảm biến hiệu quả.
+- Cung cấp giao diện trực quan và dễ sử dụng. 
